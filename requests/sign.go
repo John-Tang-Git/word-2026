@@ -116,7 +116,7 @@ func ConstantSignedDays(userID int, day int, ym string) int {
 	rctx := context.Background()
 
 	// 获取当月记录
-	sign_key := "sign:" + strconv.Itoa(userID) + ym
+	sign_key := "sign:" + strconv.Itoa(userID) + ":" + ym
 	result, err := rdb.BitField(rctx, sign_key, "GET", "u"+strconv.Itoa(day), 0).Result()
 	if err != nil {
 		fmt.Println("统计连续签到天数时发生错误！错误：", err)
@@ -194,7 +194,7 @@ func Sign(userID int, ym string, day int) {
 	rctx := context.Background()
 
 	// 根据给出的userID和年月拼接redis key
-	sign_key := "sign:" + strconv.Itoa(userID) + ym
+	sign_key := "sign:" + strconv.Itoa(userID) + ":" + ym
 
 	// 签到操作
 	_, err := rdb.SetBit(rctx, sign_key, int64(day-1), 1).Result()
@@ -222,10 +222,11 @@ func GetSign() gin.HandlerFunc {
 		rctx := context.Background()
 
 		// 构建本月份对应的redis key
-		ym_key := "sign:" + strconv.Itoa(int(userID)) + ym
+		ym_key := "sign:" + strconv.Itoa(int(userID)) + ":" + ym
+		fmt.Println("ym_key:", ym_key)
 
 		// 从redis中，获取当前年月对应的记录
-		result, err := rdb.BitField(rctx, ym_key, "u"+HowManyDays(ym), 0).Result()
+		result, err := rdb.BitField(rctx, ym_key, "GET", "u"+HowManyDays(ym), 0).Result()
 		if err != nil {
 			fmt.Println("获取当前年月的签到记录失败！错误：", err)
 		}
@@ -275,7 +276,7 @@ func WordCounter() gin.HandlerFunc {
 		}
 
 		// 如果newVal已经达到50，就达到签到标准
-		if newVal == 20 {
+		if newVal == 5 {
 			ym := cur_date[:6]
 			day, _ := strconv.Atoi(cur_date[6:])
 			Sign(int(userID), ym, day)

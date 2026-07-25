@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 	"word/config"
+	"word/database"
 	"word/redis"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,15 @@ func GetStudy() gin.HandlerFunc {
 			word_key := "alphabet:" + cur_alphabet + ":" + word_id
 			unknown_english := rdb.HGet(rctx, word_key, "english").Val()
 			fmt.Println("存在不会的词！")
+			// 同步操作：如果这个word_id对应的unknown记录，在mysql中也存过，这里就一并删除了
+			db := database.GetDB()
+			result := db.Table("user_unknowns").
+				Where("user_id = ? AND word_id = ?", userID, word_id).
+				Delete(&config.UserUnknown{})
+			if result.Error != nil {
+				fmt.Printf("删除失败: %v", result.Error)
+			}
+
 			ctx.JSON(200, gin.H{
 				"code":     0,
 				"info":     "复习词汇",

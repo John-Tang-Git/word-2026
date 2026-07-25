@@ -2,6 +2,7 @@ package main
 
 import (
 	"word/auth"
+	datasync "word/dataSync"
 	"word/database"
 	"word/redis"
 	"word/requests"
@@ -11,9 +12,16 @@ import (
 )
 
 func main() {
+
 	// 初始化数据库
 	database.InitDB()
 	redis.InitRedis()
+
+	// 主协程之外进行定时存储
+	go datasync.StartCronScheduler()
+
+	// 主协程之外，每次启动时进行redis数据初始化
+	go datasync.MysqlToRedis()
 
 	// 默认路由
 	route := gin.Default()

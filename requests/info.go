@@ -38,15 +38,20 @@ func GetInfo() gin.HandlerFunc {
 		cee_progress := rdb.HGet(rctx, progress_key, "cee").Val()
 		cet4_progress := rdb.HGet(rctx, progress_key, "cet4").Val()
 
+		// 统一转换为数字格式
+		user_score_return, _ := strconv.Atoi(userScore)
+		cee_progress_return, _ := strconv.Atoi(cee_progress)
+		cet4_progress_return, _ := strconv.Atoi(cet4_progress)
+
 		// 统一返回
 		ctx.JSON(200, gin.H{
 			"code":     0,
 			"info":     "获取该用户信息成功",
 			"用户名":      userName,
-			"积分":       userScore,
+			"积分":       user_score_return,
 			"连续签到天数":   constant_days,
-			"高考词汇学习进度": cee_progress,
-			"四级词汇学习进度": cet4_progress,
+			"高考词汇学习进度": cee_progress_return,
+			"四级词汇学习进度": cet4_progress_return,
 		})
 	}
 }
