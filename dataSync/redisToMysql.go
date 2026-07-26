@@ -50,6 +50,7 @@ func SignToMysql() {
 		db_result := db.Table("user_signs").Where("`user_id`=? AND `year_month`=?", userID, ym).First(&existing)
 		if db_result.Error == gorm.ErrRecordNotFound {
 			// 如果这一个月的存储记录还没存入
+			fmt.Println("当前这条签到记录还没存入！key:", key)
 			tmp_sign := config.UserSign{
 				UserID:     uint(userID),
 				YearMonth:  ym,
@@ -58,6 +59,7 @@ func SignToMysql() {
 			db.Table("user_signs").Create(&tmp_sign)
 		} else {
 			// 这一个月的存储记录已经存入，更新即可
+			fmt.Println("当前这条签到记录已存在，只需更新！key:", key)
 			db.Model(&existing).Updates(map[string]interface{}{
 				"signed_bits": bitsStr,
 			})
@@ -171,6 +173,7 @@ func UnknownToMysql() {
 		cur_alphabet := key_infos[2]
 		// 从redis中取得相应用户相应单词表不会的词
 		unknown_word_ids := rdb.SMembers(rctx, key).Val()
+
 		// 每一个词分别检查
 		for _, word_id := range unknown_word_ids {
 			// 检查一下有没有存储过这条不会的记录

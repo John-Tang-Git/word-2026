@@ -36,10 +36,15 @@ func SignToRedis() {
 		day_int := len(cur_bits_str)
 		day_str := strconv.Itoa(day_int)
 		// 将bits转化为int64整数
-		bits, _ := strconv.ParseInt(cur_bits_str, 2, day_int)
+		cur_bits, _ := strconv.ParseInt(cur_bits_str, 2, day_int)
 		// 构造redis key
 		cur_sign_key := "sign:" + strconv.Itoa(int(cur_user_id)) + ":" + cur_year_month
-		rdb.BitField(rctx, cur_sign_key, "SET", "u"+day_str, 0, int64(bits))
+		// 检查rdb中已经存储的当月签到记录，和mysql中的数据进行对比
+		bits_in_redis := rdb.BitField(rctx, cur_sign_key, "GET", "u"+day_str, 0).Val()[0]
+		// 假设mysql中存储的签到记录天数更多，就更新redis
+		if bits_in_redis < cur_bits {
+			rdb.BitField(rctx, cur_sign_key, "SET", "u"+day_str, 0, int64(cur_bits))
+		}
 	}
 }
 
@@ -63,7 +68,13 @@ func ScoreToRedis() {
 		cur_score := cur_score.Score
 		// 构造redis key
 		cur_score_key := "score:" + strconv.Itoa(int(cur_user_id))
-		rdb.Set(rctx, cur_score_key, strconv.Itoa(int(cur_score)), 0)
+		// 检查redis和mysql中存储的积分哪个大
+		score_in_redis := rdb.Get(rctx, cur_score_key).Val()
+		score_in_redis_int, _ := strconv.Atoi(score_in_redis)
+		// 只有在mysql存储的积分值更大时，才刷新redis
+		if score_in_redis_int < int(cur_score) {
+			rdb.Set(rctx, cur_score_key, strconv.Itoa(int(cur_score)), 0)
+		}
 	}
 }
 
@@ -77,7 +88,7 @@ func ProgressToRedis() {
 
 	// 从mysql中取得所有用户积分信息
 	var all_progresses []config.UserProgress
-	db.Table("user_scores").Find(&all_progresses)
+	db.Table("user_progresses").Find(&all_progresses)
 
 	// 把这些用户签到信息分别存入redis
 	for _, cur_progress := range all_progresses {
@@ -85,9 +96,26 @@ func ProgressToRedis() {
 		cur_user_id := cur_progress.UserID
 		cur_cee_progress := cur_progress.Cee
 		cur_cet4_progress := cur_progress.CetFour
+		// fmt.Printf("用户id：%d, MySQL中高考进度%d, 四级进度%d", cur_user_id, cur_cee_progress, cur_cet4_progress)
 		// 构造redis key
 		cur_progress_key := "progress:" + strconv.Itoa(int(cur_user_id))
-		rdb.HSet(rctx, cur_progress_key, "cee", cur_cee_progress, "cet4", cur_cet4_progress)
+		// 检查mysql和redis中哪个进度更靠前
+		progress_cee_in_redis := rdb.HGet(rctx, cur_progress_key, "cee").Val()
+		progress_cet4_in_redis := rdb.HGet(rctx, cur_progress_key, "cet4").Val()
+		progress_cee_in_redis_int, _ := strconv.Atoi(progress_cee_in_redis)
+		progress_cet4_in_redis_int, _ := strconv.Atoi(progress_cet4_in_redis)
+		// 先检查cee进度谁更靠前
+		if progress_cee_in_redis_int < int(cur_cee_progress) {
+			rdb.HSet(rctx, cur_progress_key, "cee", cur_cee_progress)
+		}
+		// 再检查cet4进度谁更靠前
+		//fmt.Printf("在这里检查用户%d的四级进度是否同步\n", cur_user_id)
+		// fmt.Printf("redis中存储的四级进度是%d, mysql中存的四级进度是%d\n", progress_cet4_in_redis_int, cur_cet4_progress)
+		if progress_cet4_in_redis_int < int(cur_cet4_progress) {
+
+			rdb.HSet(rctx, cur_progress_key, "cet4", cur_cet4_progress)
+		}
+
 	}
 }
 
@@ -101,7 +129,7 @@ func UnknownToRedis() {
 
 	// 从mysql中取得所有用户积分信息
 	var all_unknowns []config.UserUnknown
-	db.Table("user_scores").Find(&all_unknowns)
+	db.Table("user_unknowns").Find(&all_unknowns)
 
 	// 把这些用户签到信息分别存入redis
 	for _, cur_unknown := range all_unknowns {

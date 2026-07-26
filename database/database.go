@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"os"
 	"word/config"
 
 	"github.com/xuri/excelize/v2"
@@ -72,13 +73,21 @@ func InitAlphabets() {
 	// 先判断高考词汇是否录入
 	var cee_count int64
 	result := db.Model(&config.CeeInfo{}).Count(&cee_count)
+
+	_, tmp_err := ReadExcel("./data/cee.xlsx")
+	dir, _ := os.Getwd()
+	if tmp_err != nil {
+		fmt.Println("当前工作目录：", dir)
+		fmt.Println("无法识别路径，错误:", tmp_err)
+	}
+
 	if result.Error != nil {
 		fmt.Println("读取高考词汇mysql表错误，错误是：", result.Error)
 	}
 	if cee_count == 0 {
 		// 确认表是空的
 		fmt.Println("高考数据表是空的！")
-		ceeDTO, err := ReadExcel("/root/Golang/word/data/cee.xlsx")
+		ceeDTO, err := ReadExcel("./data/cee.xlsx")
 		if err != nil {
 			fmt.Println("读取高考词汇excel表失败！错误：", err)
 		}
@@ -96,7 +105,7 @@ func InitAlphabets() {
 	if cet4_count == 0 {
 		// 确认表是空的
 		fmt.Println("四级数据表是空的！")
-		ceeDTO, err := ReadExcel("/root/Golang/word/data/cet4.xlsx")
+		ceeDTO, err := ReadExcel("./data/cet4.xlsx")
 		if err != nil {
 			fmt.Println("读取四级词汇excel表失败！错误：", err)
 		}

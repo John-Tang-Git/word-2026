@@ -29,9 +29,6 @@ func main() {
 	// 登录
 	route.POST("/login", usercontrol.Login())
 
-	// 选择单词表页面
-	route.GET("/index", auth.Authorization())
-
 	// 个人信息页
 	route.GET("/info", auth.Authorization(), requests.GetInfo())
 
@@ -43,6 +40,9 @@ func main() {
 
 	// 获取某个月的签到记录
 	route.GET("/sign/:ym", auth.Authorization(), requests.GetSign())
+
+	// 一上来让用户选择单词表
+	route.GET("/index", auth.Authorization(), requests.GetIndex())
 
 	// 原神，启动！
 	route.Run()

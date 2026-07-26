@@ -235,12 +235,7 @@ func GetSign() gin.HandlerFunc {
 		bitsStr := fmt.Sprintf("%0*b", day, bits) // bitsStr是当前月签到记录对应的0101字符串
 
 		// 获取当前连续签到天数
-		constant_key := "constant:" + strconv.Itoa(int(userID))
-		constant_result, err := rdb.Get(rctx, constant_key).Result()
-		if err != nil {
-			fmt.Println("获取该用户连续签到天数失败！错误：", err)
-		}
-		constant_signed_days := constant_result
+		constant_signed_days := ConstantSignedDays(int(userID), day, ym)
 
 		// 返回JSON
 		ctx.JSON(200, gin.H{

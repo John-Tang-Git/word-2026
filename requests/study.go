@@ -119,9 +119,13 @@ func PostStudy() gin.HandlerFunc {
 			rdb.Expire(rctx, not_review_key, time.Second*3600*24) // 这个不复习的单词表是临时的，24小时后过期
 		}
 
-		// 无论会不会，都不影响记录进度
+		// 无论会不会，都不影响记录进度, 而且只有在当前学习的word_id比redis中记录的进度大时，才需要更新进度
 		progress_key := "progress:" + strconv.Itoa(int(userID))
-		rdb.HSet(rctx, progress_key, cur_alphabet, wordInput.WordID)
+		progress_in_redis := rdb.HGet(rctx, progress_key, cur_alphabet).Val()
+		progress_in_redis_int, _ := strconv.Atoi(progress_in_redis)
+		if int(wordInput.WordID) > progress_in_redis_int {
+			rdb.HSet(rctx, progress_key, cur_alphabet, wordInput.WordID)
+		}
 
 		// 获取该词对应的中英文
 		word_key := "alphabet:" + cur_alphabet + ":" + strconv.Itoa(int(wordInput.WordID))
