@@ -34,7 +34,7 @@ func Authorization() gin.HandlerFunc {
 		}
 
 		// 从claim中获取该token对应的用户id，并查找对应用户
-		cur_id := claim.Id
+		cur_id := claim.UserID
 		user_db := database.GetDB()
 		var tmp_user config.UserInfo
 		user_db.Table("user_infos").First(&tmp_user, cur_id)

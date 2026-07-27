@@ -56,7 +56,7 @@ func Login() gin.HandlerFunc {
 		// 确认输入有效，检查这个用户是不是已经注册过
 		user_db := database.GetDB()
 		var tmp_user config.UserInfo
-		user_db.Table("user_infos").Where("name = ?", loginInput.UserName).First(&tmp_user)
+		user_db.Table("user_infos").Where("user_name = ?", loginInput.UserName).First(&tmp_user)
 
 		// 如果用户还没有注册
 		if tmp_user.UserName == "" {

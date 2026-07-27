@@ -234,8 +234,12 @@ func GetSign() gin.HandlerFunc {
 		day, _ := strconv.Atoi(HowManyDays(ym))
 		bitsStr := fmt.Sprintf("%0*b", day, bits) // bitsStr是当前月签到记录对应的0101字符串
 
+		// 获取当前是当月的第几天
+		cur_day := time.Now().Format("02")
+		cur_day_int, _ := strconv.Atoi(cur_day)
+
 		// 获取当前连续签到天数
-		constant_signed_days := ConstantSignedDays(int(userID), day, ym)
+		constant_signed_days := ConstantSignedDays(int(userID), cur_day_int, ym)
 
 		// 返回JSON
 		ctx.JSON(200, gin.H{

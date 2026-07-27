@@ -41,6 +41,7 @@ func GetStudy() gin.HandlerFunc {
 			// 根据val（wordID）从redis中取出对应的词汇，注意，不能是当天刚刚不会的单词！
 			word_key := "alphabet:" + cur_alphabet + ":" + word_id
 			unknown_english := rdb.HGet(rctx, word_key, "english").Val()
+			unknown_chinese := rdb.HGet(rctx, word_key, "chinese").Val()
 			fmt.Println("存在不会的词！")
 			// 同步操作：如果这个word_id对应的unknown记录，在mysql中也存过，这里就一并删除了
 			db := database.GetDB()
@@ -56,6 +57,7 @@ func GetStudy() gin.HandlerFunc {
 				"info":     "复习词汇",
 				"word_id":  word_id,
 				"english":  unknown_english,
+				"chinese":  unknown_chinese,
 				"isReview": true,
 			})
 			return
@@ -75,11 +77,13 @@ func GetStudy() gin.HandlerFunc {
 		word_key := "alphabet:" + cur_alphabet + ":" + strconv.Itoa(cur_progress_int)
 		fmt.Println("当前的redis_key:", word_key)
 		cur_english := rdb.HGet(rctx, word_key, "english").Val()
+		cur_chinese := rdb.HGet(rctx, word_key, "chinese").Val()
 		ctx.JSON(200, gin.H{
 			"code":     0,
 			"info":     "新词汇",
 			"word_id":  cur_progress_int,
 			"english":  cur_english,
+			"chinese":  cur_chinese,
 			"isReview": false,
 		})
 	}

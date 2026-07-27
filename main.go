@@ -7,7 +7,7 @@ import (
 	"word/redis"
 	"word/requests"
 	usercontrol "word/userControl"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +25,15 @@ func main() {
 
 	// 默认路由
 	route := gin.Default()
+
+	// 允许所有CORS，显式配置以包含 authorization header
+	route.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// 登录
 	route.POST("/login", usercontrol.Login())
