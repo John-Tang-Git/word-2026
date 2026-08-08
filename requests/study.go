@@ -127,8 +127,11 @@ func PostStudy() gin.HandlerFunc {
 		progress_key := "progress:" + strconv.Itoa(int(userID))
 		progress_in_redis := rdb.HGet(rctx, progress_key, cur_alphabet).Val()
 		progress_in_redis_int, _ := strconv.Atoi(progress_in_redis)
+		fmt.Printf("[PostStudy] userID=%d, alphabet=%s, word_id=%d, old_progress=%d (%q)\n",
+			userID, cur_alphabet, wordInput.WordID, progress_in_redis_int, progress_in_redis)
 		if int(wordInput.WordID) > progress_in_redis_int {
 			rdb.HSet(rctx, progress_key, cur_alphabet, wordInput.WordID)
+			fmt.Printf("[PostStudy] updated progress[%s] = %d\n", cur_alphabet, wordInput.WordID)
 		}
 
 		// 获取该词对应的中英文

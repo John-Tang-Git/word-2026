@@ -38,6 +38,9 @@ func GetInfo() gin.HandlerFunc {
 		cee_progress := rdb.HGet(rctx, progress_key, "cee").Val()
 		cet4_progress := rdb.HGet(rctx, progress_key, "cet4").Val()
 
+		fmt.Printf("[GetInfo] userID=%d, progress_key=%s, cee=%q, cet4=%q\n",
+			userID, progress_key, cee_progress, cet4_progress)
+
 		// 统一转换为数字格式
 		user_score_return, _ := strconv.Atoi(userScore)
 		cee_progress_return, _ := strconv.Atoi(cee_progress)

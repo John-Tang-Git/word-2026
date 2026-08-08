@@ -51,7 +51,7 @@ func InitAlphabetRedis() {
 
 func InitRedis() *redis.Client {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 	})

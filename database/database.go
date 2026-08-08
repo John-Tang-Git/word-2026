@@ -117,7 +117,7 @@ func InitAlphabets() {
 
 // 初始化总数据库
 func InitDB() *gorm.DB {
-	sign_dsn := "root:Johntang2005@tcp(127.0.0.1:3306)/word?charset=utf8mb4&parseTime=True&loc=Local"
+	sign_dsn := "root:Johntang2005@tcp(mysql:3306)/word?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.Open(sign_dsn), &gorm.Config{})
 
 	if err != nil {

@@ -25,6 +25,8 @@ func GetIndex() gin.HandlerFunc {
 		cet4_progress_str := rdb.HGet(rctx, progress_key, "cet4").Val()
 		cee_progress_int, _ := strconv.Atoi(cee_progress_str)
 		cet4_progress_int, _ := strconv.Atoi(cet4_progress_str)
+		fmt.Printf("[GetIndex] userID=%d, progress_key=%s, cee=%q (%d), cet4=%q (%d)\n",
+			userID, progress_key, cee_progress_str, cee_progress_int, cet4_progress_str, cet4_progress_int)
 
 		// 返回信息
 		ctx.JSON(200, gin.H{
